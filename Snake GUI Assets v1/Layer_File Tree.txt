@@ -1,0 +1,27 @@
+<Top-Level Frame
+   <Game-Box
+      <Snake
+         <Tail Element 3
+            Tail Element 3 Body
+         >
+         <Tail Element 2
+            Tail Element 2 Body
+         >
+         <Tail Element 1
+            Tail Element 1 Body
+         >
+         <Head Element
+            Head Element Head
+         >
+      >
+      Food
+      Play Area
+      Play Area Boarder
+   >
+   <Header
+      High Score Tracker
+      Food Icon
+      Score Trackers
+      Title
+   >
+>
