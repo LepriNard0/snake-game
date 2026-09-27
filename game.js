@@ -3,6 +3,8 @@ const ctx = canvas.getContext("2d");
 const scoreEl = document.getElementById("score");
 const highScoreEl = document.getElementById("high-score");
 const gameOverEl = document.getElementById("game-over");
+const music = document.getElementById("bg-music");
+music.volume = 0.5;
 
 const HIGH_SCORE_KEY = "snakeHighScore";
 let highScore = Number(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
@@ -47,6 +49,8 @@ function resetGame() {
   scoreEl.textContent = "Score: 0";
   highScoreEl.textContent = `High Score: ${highScore}`;
   gameOverEl.classList.add("hidden");
+  music.pause();
+  music.currentTime = 0;
   draw();
 }
 
@@ -119,6 +123,7 @@ function tick() {
 function endGame() {
   gameOver = true;
   gameOverEl.classList.remove("hidden");
+  music.pause();
 }
 
 const KEY_DIRECTIONS = {
@@ -142,7 +147,11 @@ document.addEventListener("keydown", (e) => {
   const isReverse = proposed.x === -direction.x && proposed.y === -direction.y;
   if (!isReverse) {
     nextDirection = proposed;
-    started = true;
+    if (!started) {
+      started = true;
+      // Browsers block audio until a user gesture, so the first arrow press is where music can begin
+      music.play().catch(() => {});
+    }
   }
 });
 
