@@ -5,6 +5,7 @@ const highScoreEl = document.getElementById("high-score");
 const gameOverEl = document.getElementById("game-over");
 const music = document.getElementById("bg-music");
 music.volume = 0.5;
+const gameOverSfx = document.getElementById("gameover-sfx");
 
 const HIGH_SCORE_KEY = "snakeHighScore";
 let highScore = Number(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
@@ -124,6 +125,8 @@ function endGame() {
   gameOver = true;
   gameOverEl.classList.remove("hidden");
   music.pause();
+  // A fresh copy per death, so nothing (restart, new game, another death) can cut a previous one short
+  gameOverSfx.cloneNode().play().catch(() => {});
 }
 
 const KEY_DIRECTIONS = {
