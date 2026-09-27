@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <title>Snake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Snake</h1>
-  <div id="score">Score: 0</div>
-  <div id="high-score">High Score: 0</div>
-  <canvas id="board" width="400" height="400"></canvas>
-  <div id="game-over" class="hidden">
-    Game Over! Press Space to restart.
+  <header class="header">
+    <div class="title-row">
+      <img class="title" src="assets/title.svg" alt="Snake" width="215" height="52" />
+      <div class="food-icon" aria-hidden="true"></div>
+    </div>
+    <div id="high-score">High Score: 0</div>
+    <div id="score">Score: 0</div>
+  </header>
+  <div class="game-box">
+    <canvas id="board" width="380" height="380"></canvas>
   </div>
+  <div id="game-over" class="hidden">Game Over! Press Space to restart.</div>
   <script src="game.js"></script>
 </body>
 </html>

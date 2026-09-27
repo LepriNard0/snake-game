@@ -7,59 +7,91 @@ const gameOverEl = document.getElementById("game-over");
 const HIGH_SCORE_KEY = "snakeHighScore";
 let highScore = Number(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
 
-const GRID_SIZE = 20;
-const TILE_COUNT = canvas.width / GRID_SIZE;
+const CELL = 19;
+const BLOCK = 15;
+const INSET = (CELL - BLOCK) / 2;
+const TILE_COUNT = canvas.width / CELL;
 const TICK_MS = 100;
 
-let snake, direction, nextDirection, food, score, gameOver, timer;
+const FOOD_COLOR = "#FFCC00";
+const HEAD_COLOR = "#0088FF";
+const TAIL_NEAR = [0x8e, 0x8e, 0x93];
+const TAIL_FAR = [0xc7, 0xc7, 0xcc];
+
+let snake, direction, nextDirection, food, score, gameOver, started;
 
 function randomFood() {
-  return {
-    x: Math.floor(Math.random() * TILE_COUNT),
-    y: Math.floor(Math.random() * TILE_COUNT),
-  };
+  let cell;
+  do {
+    cell = {
+      x: Math.floor(Math.random() * TILE_COUNT),
+      y: Math.floor(Math.random() * TILE_COUNT),
+    };
+  } while (snake.some((s) => s.x === cell.x && s.y === cell.y));
+  return cell;
 }
 
 function resetGame() {
-  snake = [{ x: 10, y: 10 }];
-  direction = { x: 0, y: 0 };
-  nextDirection = { x: 0, y: 0 };
+  snake = [
+    { x: 10, y: 10 },
+    { x: 9, y: 10 },
+    { x: 8, y: 10 },
+    { x: 7, y: 10 },
+  ];
+  direction = { x: 1, y: 0 };
+  nextDirection = direction;
+  started = false;
   food = randomFood();
   score = 0;
   gameOver = false;
   scoreEl.textContent = "Score: 0";
   highScoreEl.textContent = `High Score: ${highScore}`;
   gameOverEl.classList.add("hidden");
+  draw();
+}
+
+function tailColor(index, count) {
+  const t = count <= 1 ? 0 : index / (count - 1);
+  const rgb = TAIL_NEAR.map((near, i) => Math.round(near + (TAIL_FAR[i] - near) * t));
+  return `rgb(${rgb.join(",")})`;
+}
+
+function drawBlock(cell, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(cell.x * CELL + INSET, cell.y * CELL + INSET, BLOCK, BLOCK, 1);
+  ctx.fill();
 }
 
 function draw() {
-  ctx.fillStyle = "#11111b";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#f9e2af";
-  ctx.fillRect(food.x * GRID_SIZE, food.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+  ctx.shadowColor = "rgba(0, 0, 0, 0.17)";
+  ctx.shadowOffsetY = 3;
+  ctx.shadowBlur = 3;
 
-  ctx.fillStyle = "#a6e3a1";
-  for (const segment of snake) {
-    ctx.fillRect(segment.x * GRID_SIZE, segment.y * GRID_SIZE, GRID_SIZE - 1, GRID_SIZE - 1);
+  drawBlock(food, FOOD_COLOR);
+
+  const tail = snake.slice(1);
+  for (let i = tail.length - 1; i >= 0; i--) {
+    drawBlock(tail[i], tailColor(i, tail.length));
   }
+  drawBlock(snake[0], HEAD_COLOR);
 }
 
 function tick() {
-  if (gameOver) return;
+  if (gameOver || !started) return;
 
   direction = nextDirection;
-  if (direction.x === 0 && direction.y === 0) {
-    draw();
-    return;
-  }
-
   const head = snake[0];
   const newHead = { x: head.x + direction.x, y: head.y + direction.y };
+  const willEat = newHead.x === food.x && newHead.y === food.y;
 
   const hitWall =
     newHead.x < 0 || newHead.x >= TILE_COUNT || newHead.y < 0 || newHead.y >= TILE_COUNT;
-  const hitSelf = snake.some((s) => s.x === newHead.x && s.y === newHead.y);
+  // The last tail segment moves out of the way this tick unless we're growing
+  const body = willEat ? snake : snake.slice(0, -1);
+  const hitSelf = body.some((s) => s.x === newHead.x && s.y === newHead.y);
 
   if (hitWall || hitSelf) {
     endGame();
@@ -68,7 +100,7 @@ function tick() {
 
   snake.unshift(newHead);
 
-  if (newHead.x === food.x && newHead.y === food.y) {
+  if (willEat) {
     score += 1;
     scoreEl.textContent = `Score: ${score}`;
     if (score > highScore) {
@@ -89,37 +121,30 @@ function endGame() {
   gameOverEl.classList.remove("hidden");
 }
 
+const KEY_DIRECTIONS = {
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+};
+
 document.addEventListener("keydown", (e) => {
-  if (gameOver && e.code === "Space") {
-    resetGame();
+  if (e.code === "Space") {
+    e.preventDefault();
+    if (gameOver) resetGame();
     return;
   }
 
-  const opposite = (a, b) => a.x === -b.x && a.y === -b.y;
-  let proposed = null;
+  const proposed = KEY_DIRECTIONS[e.key];
+  if (!proposed) return;
+  e.preventDefault();
 
-  switch (e.key) {
-    case "ArrowUp":
-      proposed = { x: 0, y: -1 };
-      break;
-    case "ArrowDown":
-      proposed = { x: 0, y: 1 };
-      break;
-    case "ArrowLeft":
-      proposed = { x: -1, y: 0 };
-      break;
-    case "ArrowRight":
-      proposed = { x: 1, y: 0 };
-      break;
-    default:
-      return;
-  }
-
-  if (!opposite(proposed, direction)) {
+  const isReverse = proposed.x === -direction.x && proposed.y === -direction.y;
+  if (!isReverse) {
     nextDirection = proposed;
+    started = true;
   }
 });
 
 resetGame();
-draw();
 setInterval(tick, TICK_MS);

@@ -1,33 +1,79 @@
 body {
-  background: #1e1e2e;
-  color: #f0f0f0;
-  font-family: sans-serif;
-  text-align: center;
-  padding-top: 20px;
+  margin: 0;
+  padding: 86px 0 40px;
+  background: #3d3d3d;
+  color: #fff;
+  font-family: "Pixelify Sans", monospace;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#score {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.title {
+  display: block;
+}
+
+.food-icon {
+  width: 51px;
+  height: 51px;
+  box-sizing: border-box;
+  background: #ffcc00;
+  border: 1px solid #373233;
+  border-radius: 4px;
+  box-shadow: inset 0 4px 4px rgba(0, 0, 0, 0.25);
 }
 
 #high-score {
-  font-size: 1rem;
-  color: #f9e2af;
-  margin-bottom: 10px;
+  font-size: 20px;
+  margin-top: 26px;
+}
+
+#score {
+  font-size: 15px;
+  margin-top: 14px;
+}
+
+.game-box {
+  position: relative;
+  margin-top: 4px;
+  padding: 5px;
+  background: #373233;
+  border-radius: 6px;
+}
+
+/* Inset shadow + outline drawn over the canvas, since box-shadow can't paint on top of canvas pixels */
+.game-box::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid #000;
+  border-radius: 3px;
+  box-shadow: inset 0 4px 4px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
 }
 
 canvas {
-  background: #11111b;
-  border: 4px solid #45475a;
   display: block;
-  margin: 0 auto;
+  background: #fff;
+  border-radius: 3px;
 }
 
 #game-over {
-  font-size: 1.5rem;
-  margin-top: 15px;
-  color: #f38ba8;
+  margin-top: 16px;
+  font-size: 20px;
 }
 
 .hidden {
